@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>To-Do List</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: "Segoe UI", Roboto, Arial, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa, #c3cfe2); /* Subtle professional gradient: light gray to soft blue-gray */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .todo-container {
+            background: #ffffff; /* Clean white background */
+            width: 380px;
+            padding: 24px;
+            border-radius: 14px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1); /* Slightly deeper shadow for professionalism */
+        }
+
+        h2 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #1a202c; /* Darker, professional gray-black */
+            font-weight: 600;
+            letter-spacing: 0.3px;
+        }
+
+        .input-section {
+            display: flex;
+            gap: 10px;
+        }
+
+        input {
+            flex: 1;
+            padding: 10px 12px;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0; /* Light gray border */
+            font-size: 14px;
+            outline: none;
+            transition: border 0.2s;
+        }
+
+        input:focus {
+            border-color: #3182ce; /* Professional blue accent */
+        }
+
+        button {
+            padding: 10px 14px;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            background-color: #3182ce; /* Professional blue */
+            color: white;
+            transition: background 0.2s;
+        }
+
+        button:hover {
+            background-color: #2c5282; /* Darker professional blue on hover */
+        }
+
+        ul {
+            list-style: none;
+            padding: 0;
+            margin-top: 20px;
+        }
+
+        li {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px;
+            border-radius: 10px;
+            background-color: #f7fafc; /* Very light gray-blue */
+            margin-bottom: 10px;
+            transition: background 0.2s;
+        }
+
+        li:hover {
+            background-color: #edf2f7; /* Slightly darker on hover */
+        }
+
+        .task-text {
+            flex: 1;
+            font-size: 14.5px;
+            color: #2d3748; /* Professional dark gray */
+            cursor: pointer;
+        }
+
+        .right {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .completed-badge {
+            background-color: #c6f6d5; /* Subtle green for completed */
+            color: #22543d; /* Dark green text */
+            padding: 4px 10px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 500;
+            display: none;
+        }
+
+        li.completed .completed-badge {
+            display: inline-block;
+        }
+
+        .delete-btn {
+            background-color: #e2e8f0; /* Light gray */
+            color: #4a5568; /* Medium gray text */
+            border: none;
+            padding: 6px 10px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 13px;
+            transition: background 0.2s, color 0.2s;
+        }
+
+        .delete-btn:hover {
+            background-color: #fed7d7; /* Soft red background on hover */
+            color: #c53030; /* Red text on hover */
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="todo-container">
+    <h2>Daily Tasks</h2>
+
+    <div class="input-section">
+        <input type="text" id="taskInput" placeholder="What do you need to do today?">
+        <button id="addBtn">Add</button>
+    </div>
+
+    <ul id="taskList"></ul>
+</div>
+
+<script>
+    const taskInput = document.getElementById("taskInput");
+    const taskList = document.getElementById("taskList");
+    const addBtn = document.getElementById("addBtn");
+
+    let tasks = [];
+
+    document.addEventListener("DOMContentLoaded", () => {
+        tasks = JSON.parse(localStorage.getItem("tasks")) || [];
+        renderAllTasks();
+    });
+
+    addBtn.addEventListener("click", addTask);
+
+    taskInput.addEventListener("keypress", e => {
+        if (e.key === "Enter") addTask();
+    });
+
+    function addTask() {
+        const text = taskInput.value.trim();
+        if (!text) return;
+
+        tasks.push({
+            id: Date.now(),
+            text,
+            completed: false
+        });
+
+        saveTasks();
+        renderAllTasks();
+        taskInput.value = "";
+    }
+
+    function renderAllTasks() {
+        taskList.innerHTML = "";
+        tasks.forEach(task => {
+            const li = document.createElement("li");
+            if (task.completed) li.classList.add("completed");
+
+            const taskText = document.createElement("span");
+            taskText.textContent = task.text;
+            taskText.className = "task-text";
+
+            taskText.addEventListener("click", () => {
+                task.completed = !task.completed;
+                saveTasks();
+                renderAllTasks();
+            });
+
+            const completedBadge = document.createElement("span");
+            completedBadge.textContent = "Completed";
+            completedBadge.className = "completed-badge";
+
+            const deleteBtn = document.createElement("button");
+            deleteBtn.textContent = "Delete";
+            deleteBtn.className = "delete-btn";
+
+            deleteBtn.addEventListener("click", () => {
+                tasks = tasks.filter(t => t.id !== task.id);
+                saveTasks();
+                renderAllTasks();
+            });
+
+            const right = document.createElement("div");
+            right.className = "right";
+            right.appendChild(completedBadge);
+            right.appendChild(deleteBtn);
+
+            li.appendChild(taskText);
+            li.appendChild(right);
+            taskList.appendChild(li);
+        });
+    }
+
+    function saveTasks() {
+        localStorage.setItem("tasks", JSON.stringify(tasks));
+    }
+</script>
+
+</body>
+</html>
